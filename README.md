@@ -73,7 +73,7 @@ Cuisine Maestros is a premium platform connecting food enthusiasts with top-tier
 
 ## 📸 Screenshots
 
-*(Add your screenshots here)*
+<img width="837" height="444" alt="image" src="https://github.com/user-attachments/assets/60bf2de9-f53f-4b9f-9535-a28f1a7640a2" />
 
 ## 🤝 Contributing
 
