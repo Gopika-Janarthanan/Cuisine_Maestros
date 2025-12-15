@@ -1,9 +1,5 @@
 # Cuisine Maestros 👨‍🍳✨
 
-![Cuisine Maestros Banner](/banner.png)
-
-**"Uber for Chefs"** - Experience fine dining in the comfort of your home.
-
 ## 🌟 Overview
 
 Cuisine Maestros is a premium platform connecting food enthusiasts with top-tier private chefs. Whether you're hosting an intimate dinner party, a family gathering, or simply want to elevate your daily meals, our platform makes it effortless to hire culinary experts.
@@ -76,10 +72,3 @@ Cuisine Maestros is a premium platform connecting food enthusiasts with top-tier
 <img width="843" height="408" alt="image" src="https://github.com/user-attachments/assets/153327d4-dc66-47a6-b246-bb74b77cb69d" />
 
 
-## 🤝 Contributing
-
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## 📄 License
-
-[MIT](https://choosealicense.com/licenses/mit/)
