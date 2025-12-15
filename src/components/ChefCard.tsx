@@ -51,7 +51,7 @@ const ChefCard = ({
               </div>
             )}
             <div className="absolute top-3 right-3 bg-card/90 backdrop-blur-sm text-foreground text-sm font-bold px-3 py-1 rounded-full">
-              ${pricePerHour}/hr
+              ₹{pricePerHour}/hr
             </div>
           </div>
 

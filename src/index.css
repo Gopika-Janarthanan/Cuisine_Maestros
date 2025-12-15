@@ -4,59 +4,60 @@
 
 @layer base {
   :root {
-    /* Warm cream background */
-    --background: 40 33% 97%;
-    --foreground: 20 20% 15%;
+    /* Pure White background */
+    --background: 0 0% 100%;
+    --foreground: 220 10% 10%; /* Dark gray/black for text */
 
-    /* Cards with slight warmth */
-    --card: 40 30% 99%;
-    --card-foreground: 20 20% 15%;
+    /* Clean white cards */
+    --card: 0 0% 100%;
+    --card-foreground: 220 10% 10%;
 
-    --popover: 40 30% 99%;
-    --popover-foreground: 20 20% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 10% 10%;
 
-    /* Deep burgundy/wine primary */
-    --primary: 350 60% 30%;
-    --primary-foreground: 40 30% 98%;
+    /* Navy Blue Primary */
+    --primary: 220 70% 30%; /* Deep Navy */
+    --primary-foreground: 0 0% 100%;
 
-    /* Warm gold secondary */
-    --secondary: 38 70% 50%;
-    --secondary-foreground: 20 20% 10%;
+    /* Gray Secondary */
+    --secondary: 220 10% 90%;
+    --secondary-foreground: 220 70% 30%;
 
-    /* Muted warm tones */
-    --muted: 30 20% 92%;
-    --muted-foreground: 20 10% 45%;
+    /* Muted grays */
+    --muted: 220 10% 96%;
+    --muted-foreground: 220 10% 45%;
 
-    /* Gold accent */
-    --accent: 38 80% 55%;
-    --accent-foreground: 20 20% 10%;
+    /* Silver/Gray accent */
+    --accent: 220 10% 90%;
+    --accent-foreground: 220 70% 30%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 30 20% 88%;
-    --input: 30 20% 88%;
-    --ring: 350 60% 30%;
+    --border: 220 10% 90%;
+    --input: 220 10% 90%;
+    --ring: 220 70% 30%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     /* Custom colors */
-    --cream: 40 33% 97%;
-    --wine: 350 60% 30%;
-    --wine-light: 350 50% 45%;
-    --gold: 38 80% 55%;
-    --gold-dark: 38 70% 45%;
-    --charcoal: 20 20% 15%;
+    --navy: 220 70% 30%;
+    --navy-light: 220 60% 50%;
+    --navy-dark: 220 80% 20%;
+    
+    --gray: 220 10% 50%;
+    --gray-light: 220 10% 90%;
+    --gray-dark: 220 10% 30%;
 
     /* Gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(350 60% 25%) 0%, hsl(350 50% 35%) 50%, hsl(38 60% 40%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(38 80% 55%) 0%, hsl(38 70% 45%) 100%);
-    --gradient-overlay: linear-gradient(to bottom, hsla(20, 20%, 10%, 0.7) 0%, hsla(20, 20%, 10%, 0.4) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(220 70% 20%) 0%, hsl(220 60% 30%) 50%, hsl(220 50% 40%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(220 10% 70%) 0%, hsl(220 10% 90%) 100%); /* Silver gradient */
+    --gradient-overlay: linear-gradient(to bottom, hsla(220, 30%, 10%, 0.7) 0%, hsla(220, 30%, 10%, 0.4) 100%);
 
     /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsla(20, 20%, 10%, 0.1);
-    --shadow-card: 0 8px 30px -8px hsla(20, 20%, 10%, 0.12);
-    --shadow-elevated: 0 20px 50px -15px hsla(20, 20%, 10%, 0.2);
+    --shadow-soft: 0 4px 20px -4px hsla(220, 20%, 10%, 0.1);
+    --shadow-card: 0 8px 30px -8px hsla(220, 20%, 10%, 0.12);
+    --shadow-elevated: 0 20px 50px -15px hsla(220, 20%, 10%, 0.2);
 
     /* Typography */
     --font-display: 'Playfair Display', Georgia, serif;
@@ -73,41 +74,42 @@
   }
 
   .dark {
-    --background: 20 20% 8%;
-    --foreground: 40 20% 95%;
+    --background: 220 20% 10%;
+    --foreground: 220 10% 95%;
 
-    --card: 20 20% 12%;
-    --card-foreground: 40 20% 95%;
+    --card: 220 20% 14%;
+    --card-foreground: 220 10% 95%;
 
-    --popover: 20 20% 12%;
-    --popover-foreground: 40 20% 95%;
+    --popover: 220 20% 14%;
+    --popover-foreground: 220 10% 95%;
 
-    --primary: 350 55% 45%;
-    --primary-foreground: 40 30% 98%;
+    --primary: 220 60% 50%; /* Lighter navy for dark mode */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 38 70% 50%;
-    --secondary-foreground: 20 20% 10%;
+    --secondary: 220 20% 20%;
+    --secondary-foreground: 220 10% 95%;
 
-    --muted: 20 15% 18%;
-    --muted-foreground: 30 15% 60%;
+    --muted: 220 20% 20%;
+    --muted-foreground: 220 10% 60%;
 
-    --accent: 38 80% 55%;
-    --accent-foreground: 20 20% 10%;
+    --accent: 220 20% 20%;
+    --accent-foreground: 220 10% 95%;
 
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 20 15% 20%;
-    --input: 20 15% 20%;
-    --ring: 350 55% 45%;
+    --border: 220 20% 25%;
+    --input: 220 20% 25%;
+    --ring: 220 60% 50%;
 
-    --cream: 20 20% 8%;
-    --wine: 350 55% 45%;
-    --wine-light: 350 50% 55%;
-    --gold: 38 80% 55%;
-    --gold-dark: 38 70% 45%;
-    --charcoal: 40 20% 95%;
-
+    --navy: 220 60% 50%;
+    --navy-light: 220 50% 60%;
+    --navy-dark: 220 70% 30%;
+    
+    --gray: 220 10% 60%;
+    --gray-light: 220 10% 80%;
+    --gray-dark: 220 10% 40%;
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;

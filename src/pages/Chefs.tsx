@@ -13,9 +13,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Search, SlidersHorizontal, X } from "lucide-react";
+import { Search, SlidersHorizontal, X, MapPin } from "lucide-react";
 
-// Mock data for chefs
+// Mock data for chefs (Ideally imported from service, but kept locally for this page logic for now/demo)
+// Note: In a real app, this would use the updated chefService.
 const allChefs = [
   {
     id: "1",
@@ -28,6 +29,7 @@ const allChefs = [
     pricePerHour: 85,
     location: "New York, NY",
     available: true,
+    gender: "Male"
   },
   {
     id: "2",
@@ -40,6 +42,7 @@ const allChefs = [
     pricePerHour: 120,
     location: "Los Angeles, CA",
     available: true,
+    gender: "Female"
   },
   {
     id: "3",
@@ -52,6 +55,7 @@ const allChefs = [
     pricePerHour: 75,
     location: "Miami, FL",
     available: false,
+    gender: "Female"
   },
   {
     id: "4",
@@ -64,6 +68,7 @@ const allChefs = [
     pricePerHour: 150,
     location: "Chicago, IL",
     available: true,
+    gender: "Male"
   },
   {
     id: "5",
@@ -76,6 +81,7 @@ const allChefs = [
     pricePerHour: 70,
     location: "San Francisco, CA",
     available: true,
+    gender: "Male"
   },
   {
     id: "6",
@@ -88,6 +94,7 @@ const allChefs = [
     pricePerHour: 90,
     location: "Seattle, WA",
     available: true,
+    gender: "Female"
   },
   {
     id: "7",
@@ -100,6 +107,7 @@ const allChefs = [
     pricePerHour: 80,
     location: "Austin, TX",
     available: false,
+    gender: "Male"
   },
   {
     id: "8",
@@ -112,6 +120,7 @@ const allChefs = [
     pricePerHour: 95,
     location: "Boston, MA",
     available: true,
+    gender: "Female"
   },
 ];
 
@@ -137,6 +146,8 @@ const sortOptions = [
 const Chefs = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCuisine, setSelectedCuisine] = useState("All Cuisines");
+  const [selectedGender, setSelectedGender] = useState("All");
+  const [locationQuery, setLocationQuery] = useState("");
   const [priceRange, setPriceRange] = useState([0, 200]);
   const [sortBy, setSortBy] = useState("rating");
   const [showFilters, setShowFilters] = useState(false);
@@ -156,7 +167,13 @@ const Chefs = () => {
       const matchesPrice =
         chef.pricePerHour >= priceRange[0] && chef.pricePerHour <= priceRange[1];
 
-      return matchesSearch && matchesCuisine && matchesPrice;
+      const matchesGender =
+        selectedGender === "All" || chef.gender === selectedGender;
+
+      const matchesLocation =
+        locationQuery === "" || chef.location.toLowerCase().includes(locationQuery.toLowerCase());
+
+      return matchesSearch && matchesCuisine && matchesPrice && matchesGender && matchesLocation;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -218,8 +235,9 @@ const Chefs = () => {
         <section className="py-8">
           <div className="container mx-auto px-4">
             {/* Filter Controls */}
-            <div className="flex flex-col lg:flex-row gap-4 mb-8">
-              <div className="flex flex-wrap gap-4 flex-1">
+            <div className="flex flex-col gap-4 mb-8">
+              {/* Top Row filters */}
+              <div className="flex flex-col lg:flex-row gap-4 flex-1">
                 <Select value={selectedCuisine} onValueChange={setSelectedCuisine}>
                   <SelectTrigger className="w-full sm:w-48 bg-card">
                     <SelectValue placeholder="Cuisine" />
@@ -232,6 +250,27 @@ const Chefs = () => {
                     ))}
                   </SelectContent>
                 </Select>
+
+                <Select value={selectedGender} onValueChange={setSelectedGender}>
+                  <SelectTrigger className="w-full sm:w-48 bg-card">
+                    <SelectValue placeholder="Gender" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="All">Any Gender</SelectItem>
+                    <SelectItem value="Male">Male</SelectItem>
+                    <SelectItem value="Female">Female</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <div className="relative w-full sm:w-64">
+                  <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Location (e.g. NY)"
+                    value={locationQuery}
+                    onChange={(e) => setLocationQuery(e.target.value)}
+                    className="pl-9 h-10 bg-card"
+                  />
+                </div>
 
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger className="w-full sm:w-48 bg-card">
@@ -249,14 +288,14 @@ const Chefs = () => {
                 <Button
                   variant="outline"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="gap-2"
+                  className="gap-2 ml-auto lg:ml-0"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
-                  More Filters
+                  Price & More
                 </Button>
               </div>
 
-              <div className="text-muted-foreground text-sm self-center">
+              <div className="text-muted-foreground text-sm self-end">
                 {filteredChefs.length} chef{filteredChefs.length !== 1 ? "s" : ""} found
               </div>
             </div>
@@ -314,6 +353,8 @@ const Chefs = () => {
                     setSearchQuery("");
                     setSelectedCuisine("All Cuisines");
                     setPriceRange([0, 200]);
+                    setLocationQuery("");
+                    setSelectedGender("All");
                   }}
                 >
                   Clear Filters

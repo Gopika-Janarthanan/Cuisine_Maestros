@@ -1,5 +1,8 @@
+import * as React from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { chefService } from "@/services/chefService";
+import { bookingService } from "@/services/bookingService";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -14,7 +17,7 @@ import {
   MessageSquare,
   ArrowLeft,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -77,14 +80,57 @@ const chefData = {
 
 const ChefProfile = () => {
   const { id } = useParams();
+  const [chefData, setChefData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [bookingDate, setBookingDate] = useState("");
   const [bookingTime, setBookingTime] = useState("");
   const [guestCount, setGuestCount] = useState("");
   const [notes, setNotes] = useState("");
 
-  const handleBooking = (e: React.FormEvent) => {
+  useEffect(() => {
+    const loadChef = async () => {
+      if (!id) return;
+      setLoading(true);
+      try {
+        const data = await chefService.getChefById(id);
+        // Extend mock data with extra profile fields for demo if missing
+        const fullData = {
+          ...data,
+          coverImage: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=400&fit=crop",
+          bio: "With over 15 years of culinary experience, I specialize in creating memorable dining experiences.",
+          experience: "15+ years",
+          specialties: ["Pasta Making", "Risotto", "Seafood", "Desserts"],
+          languages: ["English", "Italian", "Spanish"],
+          menuHighlights: ["Handmade Pasta", "Truffle Risotto", "Tiramisu"],
+          reviews: [
+            { id: 1, name: "Sarah M.", rating: 5, date: "Nov 2024", comment: "Amazing food!" },
+            { id: 2, name: "Mike R.", rating: 5, date: "Oct 2024", comment: "Great experience." }
+          ]
+        };
+        setChefData(fullData);
+      } catch (error) {
+        console.error("Error loading chef", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadChef();
+  }, [id]);
+
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!chefData) return;
+
+    await bookingService.createBooking({
+      chefId: chefData.id,
+      date: bookingDate,
+      time: bookingTime,
+      guests: Number(guestCount),
+      notes
+    });
+
     toast.success("Booking request sent! The chef will confirm shortly.");
     setIsBookingOpen(false);
     setBookingDate("");
@@ -92,6 +138,9 @@ const ChefProfile = () => {
     setGuestCount("");
     setNotes("");
   };
+
+  if (loading) return <div className="min-h-screen pt-20 text-center">Loading...</div>;
+  if (!chefData) return <div className="min-h-screen pt-20 text-center">Chef not found</div>;
 
   return (
     <div className="min-h-screen bg-background">
@@ -255,11 +304,10 @@ const ChefProfile = () => {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`w-4 h-4 ${
-                              i < review.rating
-                                ? "fill-gold text-gold"
-                                : "text-muted"
-                            }`}
+                            className={`w-4 h-4 ${i < review.rating
+                              ? "fill-gold text-gold"
+                              : "text-muted"
+                              }`}
                           />
                         ))}
                       </div>
@@ -280,7 +328,7 @@ const ChefProfile = () => {
               >
                 <div className="text-center mb-6">
                   <div className="font-display text-3xl font-bold text-foreground">
-                    ${chefData.pricePerHour}
+                    ₹{chefData.pricePerHour}
                     <span className="text-lg font-normal text-muted-foreground">/hour</span>
                   </div>
                 </div>
