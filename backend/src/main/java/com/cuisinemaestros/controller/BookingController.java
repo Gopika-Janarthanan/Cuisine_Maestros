@@ -19,4 +19,21 @@ public class BookingController {
         // In prod, use DTOs to map user/chef IDs to entities
         return bookingRepository.save(booking);
     }
+
+    @GetMapping("/chef/{chefId}")
+    public java.util.List<Booking> getBookingsByChef(@PathVariable Long chefId) {
+        return bookingRepository.findByChefId(chefId);
+    }
+
+    @PutMapping("/{id}/status")
+    @SuppressWarnings("null")
+    public org.springframework.http.ResponseEntity<Booking> updateStatus(@PathVariable Long id,
+            @RequestBody java.util.Map<String, String> statusUpdate) {
+        return bookingRepository.findById(id)
+                .map(booking -> {
+                    booking.setStatus(Booking.Status.valueOf(statusUpdate.get("status")));
+                    return org.springframework.http.ResponseEntity.ok(bookingRepository.save(booking));
+                })
+                .orElse(org.springframework.http.ResponseEntity.notFound().build());
+    }
 }

@@ -2,12 +2,12 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 
 const cuisines = [
-  { name: "Italian", image: "https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=400&h=300&fit=crop", count: 45 },
-  { name: "Japanese", image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=400&h=300&fit=crop", count: 32 },
-  { name: "French", image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=300&fit=crop", count: 28 },
-  { name: "Mexican", image: "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=400&h=300&fit=crop", count: 36 },
-  { name: "Indian", image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop", count: 41 },
-  { name: "Thai", image: "https://images.unsplash.com/photo-1562565652-a0d8f0c59eb4?w=400&h=300&fit=crop", count: 25 },
+  { name: "North Indian", image: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&h=300&fit=crop", count: 45 },
+  { name: "South Indian", image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=400&h=300&fit=crop", count: 32 },
+  { name: "Mughlai", image: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&h=300&fit=crop", count: 28 },
+  { name: "Bengali", image: "https://images.unsplash.com/photo-1594221708779-9a8b846178e6?w=400&h=300&fit=crop", count: 36 },
+  { name: "Gujarati", image: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop", count: 41 },
+  { name: "Indo-Chinese", image: "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&h=300&fit=crop", count: 25 },
 ];
 
 const CuisineCategories = () => {

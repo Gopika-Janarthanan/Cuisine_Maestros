@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ChefCard from "@/components/ChefCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { chefService } from "@/services/chefService";
 import {
   Select,
   SelectContent,
@@ -17,123 +18,19 @@ import { Search, SlidersHorizontal, X, MapPin } from "lucide-react";
 
 // Mock data for chefs (Ideally imported from service, but kept locally for this page logic for now/demo)
 // Note: In a real app, this would use the updated chefService.
-const allChefs = [
-  {
-    id: "1",
-    name: "Chef Alessandro Romano",
-    image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&h=450&fit=crop",
-    specialty: "Michelin-trained Italian cuisine specialist",
-    cuisines: ["Italian", "Mediterranean", "French"],
-    rating: 4.9,
-    reviewCount: 127,
-    pricePerHour: 85,
-    location: "New York, NY",
-    available: true,
-    gender: "Male"
-  },
-  {
-    id: "2",
-    name: "Chef Yuki Tanaka",
-    image: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=600&h=450&fit=crop",
-    specialty: "Authentic Japanese omakase experience",
-    cuisines: ["Japanese", "Sushi", "Kaiseki"],
-    rating: 4.8,
-    reviewCount: 89,
-    pricePerHour: 120,
-    location: "Los Angeles, CA",
-    available: true,
-    gender: "Female"
-  },
-  {
-    id: "3",
-    name: "Chef Maria Santos",
-    image: "https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?w=600&h=450&fit=crop",
-    specialty: "Farm-to-table Mexican fusion",
-    cuisines: ["Mexican", "Latin American", "Fusion"],
-    rating: 4.9,
-    reviewCount: 156,
-    pricePerHour: 75,
-    location: "Miami, FL",
-    available: false,
-    gender: "Female"
-  },
-  {
-    id: "4",
-    name: "Chef Pierre Dubois",
-    image: "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=600&h=450&fit=crop",
-    specialty: "Classic French fine dining",
-    cuisines: ["French", "Contemporary", "European"],
-    rating: 5.0,
-    reviewCount: 203,
-    pricePerHour: 150,
-    location: "Chicago, IL",
-    available: true,
-    gender: "Male"
-  },
-  {
-    id: "5",
-    name: "Chef Raj Patel",
-    image: "https://images.unsplash.com/photo-1507048331197-7d4ac70811cf?w=600&h=450&fit=crop",
-    specialty: "Modern Indian cuisine with traditional roots",
-    cuisines: ["Indian", "Asian Fusion", "Vegetarian"],
-    rating: 4.7,
-    reviewCount: 94,
-    pricePerHour: 70,
-    location: "San Francisco, CA",
-    available: true,
-    gender: "Male"
-  },
-  {
-    id: "6",
-    name: "Chef Emma Wilson",
-    image: "https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=600&h=450&fit=crop",
-    specialty: "Contemporary American farm-to-table",
-    cuisines: ["American", "Farm-to-Table", "Seasonal"],
-    rating: 4.8,
-    reviewCount: 112,
-    pricePerHour: 90,
-    location: "Seattle, WA",
-    available: true,
-    gender: "Female"
-  },
-  {
-    id: "7",
-    name: "Chef Carlos Mendez",
-    image: "https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=600&h=450&fit=crop",
-    specialty: "Spanish tapas and paella expert",
-    cuisines: ["Spanish", "Mediterranean", "Seafood"],
-    rating: 4.6,
-    reviewCount: 78,
-    pricePerHour: 80,
-    location: "Austin, TX",
-    available: false,
-    gender: "Male"
-  },
-  {
-    id: "8",
-    name: "Chef Lisa Chen",
-    image: "https://images.unsplash.com/photo-1551218372-a8789b81b253?w=600&h=450&fit=crop",
-    specialty: "Authentic Cantonese dim sum master",
-    cuisines: ["Chinese", "Dim Sum", "Cantonese"],
-    rating: 4.9,
-    reviewCount: 167,
-    pricePerHour: 95,
-    location: "Boston, MA",
-    available: true,
-    gender: "Female"
-  },
-];
+// Mock data removed, fetching from API
+// const allChefs = ... (removed)
 
 const cuisineOptions = [
   "All Cuisines",
-  "Italian",
-  "Japanese",
-  "French",
-  "Mexican",
-  "Indian",
-  "Chinese",
-  "Spanish",
-  "American",
+  "North Indian",
+  "South Indian",
+  "Mughlai",
+  "Bengali",
+  "Gujarati",
+  "Indo-Chinese",
+  "Continental",
+  "Fusion",
 ];
 
 const sortOptions = [
@@ -148,47 +45,48 @@ const Chefs = () => {
   const [selectedCuisine, setSelectedCuisine] = useState("All Cuisines");
   const [selectedGender, setSelectedGender] = useState("All");
   const [locationQuery, setLocationQuery] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 200]);
+  const [priceRange, setPriceRange] = useState([0, 10000]);
   const [sortBy, setSortBy] = useState("rating");
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filter and sort chefs
-  const filteredChefs = allChefs
-    .filter((chef) => {
-      const matchesSearch =
-        chef.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        chef.specialty.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        chef.cuisines.some((c) => c.toLowerCase().includes(searchQuery.toLowerCase()));
+  const [chefs, setChefs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-      const matchesCuisine =
-        selectedCuisine === "All Cuisines" ||
-        chef.cuisines.some((c) => c.toLowerCase() === selectedCuisine.toLowerCase());
+  // Import chefService handled at top
 
-      const matchesPrice =
-        chef.pricePerHour >= priceRange[0] && chef.pricePerHour <= priceRange[1];
 
-      const matchesGender =
-        selectedGender === "All" || chef.gender === selectedGender;
-
-      const matchesLocation =
-        locationQuery === "" || chef.location.toLowerCase().includes(locationQuery.toLowerCase());
-
-      return matchesSearch && matchesCuisine && matchesPrice && matchesGender && matchesLocation;
-    })
-    .sort((a, b) => {
-      switch (sortBy) {
-        case "rating":
-          return b.rating - a.rating;
-        case "price-low":
-          return a.pricePerHour - b.pricePerHour;
-        case "price-high":
-          return b.pricePerHour - a.pricePerHour;
-        case "reviews":
-          return b.reviewCount - a.reviewCount;
-        default:
-          return 0;
+  useEffect(() => {
+    const fetchChefs = async () => {
+      setLoading(true);
+      try {
+        const filters = {
+          query: searchQuery,
+          cuisine: selectedCuisine,
+          gender: selectedGender,
+          location: locationQuery || undefined,
+          // minPrice: priceRange[0], // Uncomment when backend supports
+          // maxPrice: priceRange[1], 
+          sortBy: sortBy
+        };
+        const results = await chefService.searchChefs(filters);
+        setChefs(results);
+      } catch (error) {
+        console.error("Failed to fetch chefs", error);
+        setChefs([]);
+      } finally {
+        setLoading(false);
       }
-    });
+    };
+
+    // Debounce search slightly
+    const timer = setTimeout(() => {
+      fetchChefs();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, selectedCuisine, selectedGender, locationQuery, priceRange, sortBy]);
+
+  const filteredChefs = chefs; // API handles filtering now
 
   return (
     <div className="min-h-screen bg-background">
@@ -323,13 +221,13 @@ const Chefs = () => {
                     value={priceRange}
                     onValueChange={setPriceRange}
                     min={0}
-                    max={200}
+                    max={20000}
                     step={10}
                     className="mb-2"
                   />
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>${priceRange[0]}/hr</span>
-                    <span>${priceRange[1]}/hr</span>
+                    <span>₹{priceRange[0]}/hr</span>
+                    <span>₹{priceRange[1]}/hr</span>
                   </div>
                 </div>
               </motion.div>
@@ -352,7 +250,7 @@ const Chefs = () => {
                   onClick={() => {
                     setSearchQuery("");
                     setSelectedCuisine("All Cuisines");
-                    setPriceRange([0, 200]);
+                    setPriceRange([0, 10000]);
                     setLocationQuery("");
                     setSelectedGender("All");
                   }}

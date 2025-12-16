@@ -23,12 +23,19 @@ const Navbar = () => {
     navigate("/");
   };
 
-  const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/chefs", label: "Find Chefs" },
-    { href: "/how-it-works", label: "How It Works" },
-    { href: "/about", label: "About" },
-  ];
+  // Determine nav links based on role
+  const navLinks = user?.role === "CHEF"
+    ? [
+      { href: "/dashboard", label: "Dashboard" },
+      { href: "/how-it-works", label: "How It Works" },
+      { href: "/about", label: "About" },
+    ]
+    : [
+      { href: "/", label: "Home" },
+      { href: "/chefs", label: "Find Chefs" },
+      { href: "/how-it-works", label: "How It Works" },
+      { href: "/about", label: "About" },
+    ];
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
@@ -75,11 +82,8 @@ const Navbar = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                  Dashboard
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  Profile
+                  My Profile
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500">

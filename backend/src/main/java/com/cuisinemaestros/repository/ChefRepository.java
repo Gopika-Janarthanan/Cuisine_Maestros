@@ -6,4 +6,6 @@ import java.util.List;
 
 public interface ChefRepository extends JpaRepository<Chef, Long> {
     List<Chef> findByAvailableTrue();
+
+    java.util.Optional<Chef> findByUserId(Long userId);
 }

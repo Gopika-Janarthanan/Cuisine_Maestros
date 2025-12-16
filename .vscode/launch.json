@@ -1,0 +1,23 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Backend: Spring Boot",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/backend",
+            "mainClass": "com.cuisinemaestros.ChefConnectApplication",
+            "projectName": "chef-connect"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Frontend: Chrome",
+            "url": "http://localhost:5173",
+            "webRoot": "${workspaceFolder}/src",
+            "sourceMapPathOverrides": {
+                "webpack:///src/*": "${webRoot}/*"
+            }
+        }
+    ]
+}

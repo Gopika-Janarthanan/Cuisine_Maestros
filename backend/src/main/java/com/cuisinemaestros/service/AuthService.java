@@ -29,7 +29,12 @@ public class AuthService {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (user.getPassword().equals(request.getPassword())) { // In prod use BCrypt
-                return new AuthResponse("dummy-jwt-token-" + user.getId(), user.getName(), user.getRole().name());
+                Long chefId = null;
+                if (user.getRole() == User.Role.CHEF) {
+                    chefId = chefRepository.findByUserId(user.getId()).map(Chef::getId).orElse(null);
+                }
+                return new AuthResponse("dummy-jwt-token-" + user.getId(), user.getName(), user.getRole().name(),
+                        user.getId(), chefId);
             }
         }
         throw new RuntimeException("Invalid credentials");
@@ -48,14 +53,18 @@ public class AuthService {
         user.setRole(request.getRole());
         user = userRepository.save(user);
 
+        Long chefId = null;
+
         if (request.getRole() == User.Role.CHEF) {
             Chef chef = new Chef();
             chef.setUser(user);
             chef.setBio("Professional Chef ready to serve.");
             chef.setLocation("Unknown");
-            chefRepository.save(chef);
+            chef = chefRepository.save(chef);
+            chefId = chef.getId();
         }
 
-        return new AuthResponse("dummy-jwt-token-" + user.getId(), user.getName(), user.getRole().name());
+        return new AuthResponse("dummy-jwt-token-" + user.getId(), user.getName(), user.getRole().name(), user.getId(),
+                chefId);
     }
 }

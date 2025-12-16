@@ -28,4 +28,34 @@ public class ChefController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PostMapping("/search")
+    @SuppressWarnings("null")
+    public ResponseEntity<List<Chef>> searchChefs(@RequestBody com.cuisinemaestros.dto.ChefSearchRequest request) {
+        // Simple in-memory filtering for demonstration (in real app use DB
+        // query/Specifications)
+        List<Chef> allChefs = chefRepository.findAll();
+
+        List<Chef> filtered = allChefs.stream()
+                .filter(chef -> {
+                    boolean matchesQuery = request.getQuery() == null || request.getQuery().isEmpty() ||
+                            chef.getUser().getName().toLowerCase().contains(request.getQuery().toLowerCase()) ||
+                            chef.getSpecialty().toLowerCase().contains(request.getQuery().toLowerCase());
+
+                    boolean matchesCuisine = request.getCuisine() == null || request.getCuisine().equals("All Cuisines")
+                            ||
+                            chef.getCuisines().stream().anyMatch(c -> c.equalsIgnoreCase(request.getCuisine()));
+
+                    boolean matchesGender = request.getGender() == null || request.getGender().equals("All") ||
+                            (chef.getGender() != null && chef.getGender().equalsIgnoreCase(request.getGender()));
+
+                    // Note: Ignoring location and price strictly for now to keep it simple,
+                    // but this is where you'd add that logic.
+
+                    return matchesQuery && matchesCuisine && matchesGender;
+                })
+                .toList();
+
+        return ResponseEntity.ok(filtered);
+    }
 }

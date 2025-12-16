@@ -43,4 +43,6 @@ public class Chef {
     @CollectionTable(name = "chef_cuisines", joinColumns = @JoinColumn(name = "chef_id"))
     @Column(name = "cuisine")
     private List<String> cuisines;
+
+    private String gender;
 }

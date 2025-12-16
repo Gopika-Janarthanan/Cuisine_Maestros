@@ -1,0 +1,58 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run Backend (Spring Boot)",
+            "type": "shell",
+            "command": "mvn spring-boot:run",
+            "options": {
+                "cwd": "${workspaceFolder}/backend"
+            },
+            "problemMatcher": [
+                "$java"
+            ],
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "isBackground": true
+        },
+        {
+            "label": "Run Frontend (Vite)",
+            "type": "shell",
+            "command": "npm run dev",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "owner": "typescript",
+                "pattern": {
+                    "regexp": "^([^\\s].*)\\((\\d+|\\d+,\\d+|\\d+,\\d+,\\d+,\\d+)\\):\\s+(error|warning|info)\\s+(TS\\d+)\\s*:\\s*(.*)$",
+                    "file": 1,
+                    "location": 2,
+                    "severity": 3,
+                    "code": 4,
+                    "message": 5
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".",
+                    "endsPattern": "Local:"
+                }
+            }
+        },
+        {
+            "label": "Start Full Stack",
+            "dependsOn": [
+                "Run Backend (Spring Boot)",
+                "Run Frontend (Vite)"
+            ],
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

@@ -2,9 +2,11 @@ import * as React from "react";
 import { createContext, useContext, useState, useEffect } from "react";
 
 interface User {
+    id: string;
     name: string;
     email: string;
     role: "USER" | "CHEF";
+    chefId?: number;
 }
 
 interface AuthContextType {

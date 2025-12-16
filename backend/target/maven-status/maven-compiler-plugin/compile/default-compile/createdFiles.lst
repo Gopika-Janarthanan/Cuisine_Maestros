@@ -1,0 +1,16 @@
+com\cuisinemaestros\repository\BookingRepository.class
+com\cuisinemaestros\entity\Booking.class
+com\cuisinemaestros\config\SecurityConfig.class
+com\cuisinemaestros\repository\ChefRepository.class
+com\cuisinemaestros\entity\Booking$Status.class
+com\cuisinemaestros\entity\Chef.class
+com\cuisinemaestros\entity\User.class
+com\cuisinemaestros\dto\LoginRequest.class
+com\cuisinemaestros\ChefConnectApplication.class
+com\cuisinemaestros\controller\AuthController.class
+com\cuisinemaestros\dto\AuthResponse.class
+com\cuisinemaestros\dto\RegisterRequest.class
+com\cuisinemaestros\entity\User$Role.class
+com\cuisinemaestros\controller\BookingController.class
+com\cuisinemaestros\service\AuthService.class
+com\cuisinemaestros\repository\UserRepository.class

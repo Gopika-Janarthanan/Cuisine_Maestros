@@ -11,7 +11,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ChefHat, User } from "lucide-react";
-import { apiClient } from "@/services/api";
+import { authService } from "@/services/authService";
+import { useAuth } from "@/context/AuthContext";
 
 const SignIn = () => {
     const navigate = useNavigate();
@@ -27,25 +28,25 @@ const SignIn = () => {
     const [regPassword, setRegPassword] = useState("");
     const [role, setRole] = useState<"USER" | "CHEF">("USER");
 
+    const { login } = useAuth();
+
+
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         try {
-            // In a real app, use the backend. For demo/fallback, sim success if backend fails/mocks.
-            try {
-                await apiClient.post("/auth/login", { email: loginEmail, password: loginPassword });
-            } catch (err) {
-                console.warn("Backend unavailable, using mock login");
-            }
-            // Store user session via Context
-            const mockRole = loginEmail.includes("chef") ? "CHEF" : "USER";
-            const mockUser = { name: "John Doe", email: loginEmail, role: mockRole };
-            // Assuming 'login' function is provided by a context or similar mechanism
-            // login(mockUser); 
-
+            const response = await authService.login({ email: loginEmail, password: loginPassword });
+            login({
+                id: response.userId.toString(),
+                name: response.name,
+                email: loginEmail,
+                role: response.role,
+                chefId: response.chefId
+            });
             toast.success("Welcome back!", { description: "You have successfully signed in." });
-            navigate(mockRole === "CHEF" ? "/dashboard" : "/");
+            navigate(response.role === "CHEF" ? "/dashboard" : "/");
         } catch (error) {
+            console.error(error);
             toast.error("Login failed. Please check your credentials.");
         } finally {
             setLoading(false);
@@ -56,20 +57,19 @@ const SignIn = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            try {
-                await apiClient.post("/auth/register", { name: regName, email: regEmail, password: regPassword, role });
-            } catch (err) {
-                console.warn("Backend unavailable, using mock register");
-                // Store user session via Context
-                const mockUser = { name: regName || "New User", email: regEmail, role };
-                // Assuming 'login' function is provided by a context or similar mechanism
-                // login(mockUser);
-            }
-
+            const response = await authService.register({ name: regName, email: regEmail, password: regPassword, role });
+            login({
+                id: response.userId.toString(),
+                name: response.name,
+                email: regEmail,
+                role: response.role,
+                chefId: response.chefId
+            });
             const roleMsg = role === "CHEF" ? "Your chef application has been initialized." : "Ready to hire a chef?";
             toast.success("Account created successfully!", { description: roleMsg });
-            navigate(role === "CHEF" ? "/dashboard" : "/");
+            navigate(response.role === "CHEF" ? "/dashboard" : "/");
         } catch (error) {
+            console.error(error);
             toast.error("Registration failed. Please try again.");
         } finally {
             setLoading(false);

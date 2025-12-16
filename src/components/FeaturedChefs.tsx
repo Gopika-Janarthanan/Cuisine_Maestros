@@ -5,57 +5,7 @@ import ChefCard from "./ChefCard";
 import { useEffect, useState } from "react";
 import { chefService, Chef } from "@/services/chefService";
 
-// Mock data for featured chefs
-const featuredChefs = [
-  {
-    id: "1",
-    name: "Chef Alessandro Romano",
-    image: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&h=450&fit=crop",
-    specialty: "Michelin-trained Italian cuisine specialist",
-    cuisines: ["Italian", "Mediterranean", "French"],
-    rating: 4.9,
-    reviewCount: 127,
-    pricePerHour: 85,
-    location: "New York, NY",
-    available: true,
-  },
-  {
-    id: "2",
-    name: "Chef Yuki Tanaka",
-    image: "https://images.unsplash.com/photo-1581299894007-aaa50297cf16?w=600&h=450&fit=crop",
-    specialty: "Authentic Japanese omakase experience",
-    cuisines: ["Japanese", "Sushi", "Kaiseki"],
-    rating: 4.8,
-    reviewCount: 89,
-    pricePerHour: 120,
-    location: "Los Angeles, CA",
-    available: true,
-  },
-  {
-    id: "3",
-    name: "Chef Maria Santos",
-    image: "https://images.unsplash.com/photo-1595273670150-bd0c3c392e46?w=600&h=450&fit=crop",
-    specialty: "Farm-to-table Mexican fusion",
-    cuisines: ["Mexican", "Latin American", "Fusion"],
-    rating: 4.9,
-    reviewCount: 156,
-    pricePerHour: 75,
-    location: "Miami, FL",
-    available: false,
-  },
-  {
-    id: "4",
-    name: "Chef Pierre Dubois",
-    image: "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=600&h=450&fit=crop",
-    specialty: "Classic French fine dining",
-    cuisines: ["French", "Contemporary", "European"],
-    rating: 5.0,
-    reviewCount: 203,
-    pricePerHour: 150,
-    location: "Chicago, IL",
-    available: true,
-  },
-];
+// Mock data removed (using chefService)
 
 const FeaturedChefs = () => {
   const [chefs, setChefs] = useState<Chef[]>([]);

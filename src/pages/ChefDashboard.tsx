@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/context/AuthContext";
+import { bookingService } from "@/services/bookingService";
 import { Check, X, Clock, Calendar, User } from "lucide-react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
@@ -45,13 +46,34 @@ const INITIAL_BOOKINGS = [
 
 const ChefDashboard = () => {
     const { user } = useAuth();
-    const [bookings, setBookings] = useState(INITIAL_BOOKINGS);
+    const [bookings, setBookings] = useState<any[]>([]); // Use bookingService.Booking type properly in real code
+    const [loading, setLoading] = useState(true);
 
-    const handleAction = (id: number, action: "CONFIRMED" | "REJECTED") => {
-        setBookings(prev => prev.map(booking =>
-            booking.id === id ? { ...booking, status: action } : booking
-        ));
-        toast.success(`Booking ${action.toLowerCase()} successfully`);
+    // Services imported at top
+
+
+    useEffect(() => {
+        if (user?.chefId) {
+            bookingService.getBookingsForChef(String(user.chefId))
+                .then((data: any) => setBookings(data))
+                .catch((err: any) => toast.error("Failed to load bookings"))
+                .finally(() => setLoading(false));
+        } else if (user?.role === "CHEF" && !user.chefId) {
+            // Should not happen if auth flow is correct, but handle grace
+            setLoading(false);
+        }
+    }, [user]);
+
+    const handleAction = async (id: number, action: "CONFIRMED" | "REJECTED") => {
+        try {
+            await bookingService.updateBookingStatus(id, action);
+            setBookings(prev => prev.map(booking =>
+                booking.id === id ? { ...booking, status: action } : booking
+            ));
+            toast.success(`Booking ${action.toLowerCase()} successfully`);
+        } catch (error) {
+            toast.error("Failed to update booking status");
+        }
     };
 
     const pendingBookings = bookings.filter(b => b.status === "PENDING");
