@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,21 @@ import { useAuth } from "@/context/AuthContext";
 
 const SignIn = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [loading, setLoading] = useState(false);
+
+    // Determine initial tab based on path
+    const [activeTab, setActiveTab] = useState(location.pathname === "/register" ? "register" : "login");
+
+    // Update active tab when path changes
+    React.useEffect(() => {
+        setActiveTab(location.pathname === "/register" ? "register" : "login");
+    }, [location.pathname]);
+
+    const handleTabChange = (value: string) => {
+        setActiveTab(value);
+        navigate(value === "register" ? "/register" : "/login");
+    };
 
     // Login State
     const [loginEmail, setLoginEmail] = useState("");
@@ -90,7 +104,7 @@ const SignIn = () => {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <Tabs defaultValue="login" className="w-full">
+                        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 mb-6">
                                 <TabsTrigger value="login">Sign In</TabsTrigger>
                                 <TabsTrigger value="register">Create Account</TabsTrigger>

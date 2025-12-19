@@ -32,30 +32,56 @@ public class ChefController {
     @PostMapping("/search")
     @SuppressWarnings("null")
     public ResponseEntity<List<Chef>> searchChefs(@RequestBody com.cuisinemaestros.dto.ChefSearchRequest request) {
-        // Simple in-memory filtering for demonstration (in real app use DB
-        // query/Specifications)
         List<Chef> allChefs = chefRepository.findAll();
 
-        List<Chef> filtered = allChefs.stream()
-                .filter(chef -> {
-                    boolean matchesQuery = request.getQuery() == null || request.getQuery().isEmpty() ||
-                            chef.getUser().getName().toLowerCase().contains(request.getQuery().toLowerCase()) ||
-                            chef.getSpecialty().toLowerCase().contains(request.getQuery().toLowerCase());
+        java.util.stream.Stream<Chef> stream = allChefs.stream();
 
-                    boolean matchesCuisine = request.getCuisine() == null || request.getCuisine().equals("All Cuisines")
-                            ||
-                            chef.getCuisines().stream().anyMatch(c -> c.equalsIgnoreCase(request.getCuisine()));
+        // Filtering
+        stream = stream.filter(chef -> {
+            boolean matchesQuery = request.getQuery() == null || request.getQuery().isEmpty() ||
+                    chef.getUser().getName().toLowerCase().contains(request.getQuery().toLowerCase()) ||
+                    chef.getSpecialty().toLowerCase().contains(request.getQuery().toLowerCase());
 
-                    boolean matchesGender = request.getGender() == null || request.getGender().equals("All") ||
-                            (chef.getGender() != null && chef.getGender().equalsIgnoreCase(request.getGender()));
+            boolean matchesCuisine = request.getCuisine() == null || request.getCuisine().equals("All Cuisines") ||
+                    chef.getCuisines().stream().anyMatch(c -> c.equalsIgnoreCase(request.getCuisine()));
 
-                    // Note: Ignoring location and price strictly for now to keep it simple,
-                    // but this is where you'd add that logic.
+            boolean matchesGender = request.getGender() == null || request.getGender().equals("All") ||
+                    (chef.getGender() != null && chef.getGender().equalsIgnoreCase(request.getGender()));
 
-                    return matchesQuery && matchesCuisine && matchesGender;
-                })
-                .toList();
+            boolean matchesLocation = request.getLocation() == null || request.getLocation().isEmpty() ||
+                    (chef.getLocation() != null
+                            && chef.getLocation().toLowerCase().contains(request.getLocation().toLowerCase()));
 
+            boolean matchesMinPrice = request.getMinPrice() == null ||
+                    (chef.getPricePerHour() != null && chef.getPricePerHour().doubleValue() >= request.getMinPrice());
+
+            boolean matchesMaxPrice = request.getMaxPrice() == null ||
+                    (chef.getPricePerHour() != null && chef.getPricePerHour().doubleValue() <= request.getMaxPrice());
+
+            return matchesQuery && matchesCuisine && matchesGender && matchesLocation && matchesMinPrice
+                    && matchesMaxPrice;
+        });
+
+        // Sorting
+        if (request.getSortBy() != null) {
+            switch (request.getSortBy()) {
+                case "price-low":
+                    stream = stream.sorted((c1, c2) -> c1.getPricePerHour().compareTo(c2.getPricePerHour()));
+                    break;
+                case "price-high":
+                    stream = stream.sorted((c1, c2) -> c2.getPricePerHour().compareTo(c1.getPricePerHour()));
+                    break;
+                case "reviews":
+                    stream = stream.sorted((c1, c2) -> c2.getReviewCount().compareTo(c1.getReviewCount()));
+                    break;
+                case "rating":
+                default:
+                    stream = stream.sorted((c1, c2) -> c2.getRating().compareTo(c1.getRating()));
+                    break;
+            }
+        }
+
+        List<Chef> filtered = stream.toList();
         return ResponseEntity.ok(filtered);
     }
 }

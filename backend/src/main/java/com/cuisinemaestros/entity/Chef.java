@@ -45,4 +45,12 @@ public class Chef {
     private List<String> cuisines;
 
     private String gender;
+
+    public String getName() {
+        return user != null ? user.getName() : null;
+    }
+
+    public String getEmail() {
+        return user != null ? user.getEmail() : null;
+    }
 }

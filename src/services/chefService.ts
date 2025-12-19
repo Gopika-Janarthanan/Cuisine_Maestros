@@ -193,5 +193,30 @@ export const chefService = {
             console.log("Backend offline, using mock data");
             return MOCK_CHEFS.find(c => c.id === id);
         }
+    },
+
+    searchChefs: async (filters: any): Promise<Chef[]> => {
+        try {
+            return await apiClient.post<Chef[]>('/chefs/search', filters);
+        } catch (error) {
+            console.log("Backend offline or error, using mock filtering");
+            return MOCK_CHEFS.filter(chef => {
+                const matchesQuery = !filters.query ||
+                    chef.name.toLowerCase().includes(filters.query.toLowerCase()) ||
+                    chef.specialty.toLowerCase().includes(filters.query.toLowerCase());
+
+                const matchesCuisine = !filters.cuisine || filters.cuisine === "All Cuisines" ||
+                    chef.cuisines.some(c => c.toLowerCase() === filters.cuisine.toLowerCase());
+
+                const matchesGender = !filters.gender || filters.gender === "All" ||
+                    chef.gender === filters.gender;
+
+                const matchesLocation = !filters.location ||
+                    chef.location.toLowerCase().includes(filters.location.toLowerCase());
+
+                // Note: Price range and sorting could be added here for a better mock experience
+                return matchesQuery && matchesCuisine && matchesGender && matchesLocation;
+            });
+        }
     }
 };
