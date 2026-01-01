@@ -255,12 +255,18 @@ const ChefDashboard = () => {
                                         <CardContent>
                                             <div className="flex justify-between items-center">
                                                 <div className="flex flex-col gap-2">
-                                                    <span className="text-sm bg-green-100 text-green-800 px-3 py-1 rounded-full w-fit">Confirmed</span>
+                                                    <span className={`text-sm px-3 py-1 rounded-full w-fit ${booking.status === 'PAID' ? 'bg-blue-100 text-blue-800 font-bold' : 'bg-green-100 text-green-800'
+                                                        }`}>
+                                                        {booking.status === 'PAID' ? 'Paid & Confirmed' : 'Confirmed (Awaiting Payment)'}
+                                                    </span>
                                                     <Button variant="link" className="p-0 h-auto text-xs w-fit" onClick={() => setSelectedUser(booking.user)}>
                                                         View User Profile
                                                     </Button>
                                                 </div>
-                                                <Button variant="outline">View Details</Button>
+                                                <div className="text-right">
+                                                    <div className="text-sm font-semibold text-gold mb-1">₹{booking.totalAmount}</div>
+                                                    <Button variant="outline" size="sm">View Details</Button>
+                                                </div>
                                             </div>
                                         </CardContent>
                                     </Card>

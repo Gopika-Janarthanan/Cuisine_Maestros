@@ -24,12 +24,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/**").permitAll() // Permit all API endpoints for demo/dev
-                        .requestMatchers("/h2-console/**").permitAll() // Allow H2 console
+                        .requestMatchers("/api/**").permitAll()
                         .anyRequest().authenticated())
-                .formLogin(form -> form.disable()) // Disable default form login
-                .httpBasic(basic -> basic.disable()) // Disable HTTP Basic auth
-                .headers(headers -> headers.frameOptions(frame -> frame.disable())); // Allow H2 console frames
+                .formLogin(form -> form.disable())
+                .httpBasic(basic -> basic.disable());
         return http.build();
     }
 

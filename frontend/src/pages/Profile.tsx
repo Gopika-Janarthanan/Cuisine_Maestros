@@ -170,23 +170,29 @@ const Profile = () => {
                                                         <div>
                                                             <CardTitle className="text-lg font-bold flex items-center gap-2">
                                                                 <ChefHat className="w-5 h-5" />
-                                                                Booking #{booking.id}
+                                                                {booking.chef?.name || `Chef #${booking.chefId}`}
                                                             </CardTitle>
                                                             <CardDescription>
                                                                 {new Date(booking.date).toLocaleDateString()} at {booking.time}
                                                             </CardDescription>
                                                         </div>
-                                                        <div className={`px-2 py-1 rounded-full text-xs font-bold ${booking.status === 'CONFIRMED' ? 'bg-green-100 text-green-800' :
-                                                            booking.status === 'PAID' ? 'bg-blue-100 text-blue-800' :
-                                                                booking.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
-                                                                    'bg-yellow-100 text-yellow-800'
+                                                        <div className={`px-3 py-1 rounded-full text-xs font-bold border ${booking.status === 'PAID' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                            booking.status === 'CONFIRMED' ? 'bg-green-50 text-green-700 border-green-200' :
+                                                                booking.status === 'REJECTED' ? 'bg-red-50 text-red-700 border-red-200' :
+                                                                    'bg-yellow-50 text-yellow-700 border-yellow-200'
                                                             }`}>
-                                                            {booking.status}
+                                                            {booking.status === 'PAID' ? 'PAID & SECURED' : booking.status}
                                                         </div>
                                                     </div>
                                                 </CardHeader>
                                                 <CardContent>
                                                     <div className="space-y-2 text-sm">
+                                                        {booking.status === 'PAID' && (
+                                                            <div className="mb-4 p-2 bg-blue-50/50 rounded border border-blue-100/50 text-blue-700 text-xs flex items-center gap-2">
+                                                                <CreditCard className="w-3 h-3" />
+                                                                Payment confirmed. Your chef is notified!
+                                                            </div>
+                                                        )}
                                                         <div className="flex justify-between">
                                                             <span className="text-muted-foreground">Address:</span>
                                                             <span className="font-medium text-right">

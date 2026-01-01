@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.transaction.annotation.Transactional;
 import java.util.UUID;
 
 @RestController
@@ -23,10 +24,21 @@ public class PaymentController {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private com.cuisinemaestros.repository.MessageRepository messageRepository;
+
     @PostMapping
+    @Transactional
     public ResponseEntity<Payment> createPayment(@RequestBody PaymentRequest request) {
         Booking booking = bookingRepository.findById(request.getBookingId())
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // If already paid, just return the existing payment
+        if (booking.getStatus() == BookingStatus.PAID) {
+            return paymentRepository.findByBookingId(booking.getId())
+                    .map(ResponseEntity::ok)
+                    .orElseThrow(() -> new RuntimeException("Booking marked as PAID but no payment record found"));
+        }
 
         if (booking.getStatus() != BookingStatus.CONFIRMED) {
             throw new RuntimeException("Booking must be CONFIRMED by chef before payment");
@@ -44,6 +56,30 @@ public class PaymentController {
         // Update booking status
         booking.setStatus(BookingStatus.PAID);
         bookingRepository.save(booking);
+
+        // Send Notifications via Messages
+        try {
+            // 1. Send confirmation to User
+            com.cuisinemaestros.entity.Message userMsg = new com.cuisinemaestros.entity.Message();
+            userMsg.setSenderId(0L); // System User ID
+            userMsg.setReceiverId(booking.getUser().getId());
+            userMsg.setBooking(booking);
+            userMsg.setContent("Payment of ₹" + booking.getTotalAmount() + " for Booking #" + booking.getId()
+                    + " has been confirmed. Thank you!");
+            messageRepository.save(userMsg);
+
+            // 2. Send notification to Chef
+            com.cuisinemaestros.entity.Message chefMsg = new com.cuisinemaestros.entity.Message();
+            chefMsg.setSenderId(0L); // System User ID
+            chefMsg.setReceiverId(booking.getChef().getUser().getId());
+            chefMsg.setBooking(booking);
+            chefMsg.setContent("Good news! User " + booking.getUser().getName() + " has completed the payment of ₹"
+                    + booking.getTotalAmount() + " for Booking #" + booking.getId() + ".");
+            messageRepository.save(chefMsg);
+        } catch (Exception e) {
+            // Log error but don't fail payment if messaging fails
+            System.err.println("Failed to send payment notifications: " + e.getMessage());
+        }
 
         return ResponseEntity.ok(savedPayment);
     }
