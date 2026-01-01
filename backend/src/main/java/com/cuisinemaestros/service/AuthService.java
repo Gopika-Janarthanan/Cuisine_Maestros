@@ -8,6 +8,7 @@ import com.cuisinemaestros.entity.User;
 import com.cuisinemaestros.repository.ChefRepository;
 import com.cuisinemaestros.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +23,17 @@ public class AuthService {
     @Autowired
     private ChefRepository chefRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public AuthResponse login(LoginRequest request) {
         // Simplified login logic (no real hashing/JWT for demo simplicity unless
         // requested)
         Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            if (user.getPassword().equals(request.getPassword())) { // In prod use BCrypt
+            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) { // Use BCrypt for prod and dev
+                                                                                      // consistently
                 Long chefId = null;
                 if (user.getRole() == User.Role.CHEF) {
                     chefId = chefRepository.findByUserId(user.getId()).map(Chef::getId).orElse(null);
@@ -49,7 +54,7 @@ public class AuthService {
         User user = new User();
         user.setName(request.getName());
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword()); // In prod use BCrypt
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole(request.getRole());
         user = userRepository.save(user);
 

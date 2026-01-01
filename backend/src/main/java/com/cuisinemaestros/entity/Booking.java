@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "bookings")
@@ -24,6 +25,10 @@ public class Booking {
     @JoinColumn(name = "chef_id", nullable = false)
     private Chef chef;
 
+    @ManyToOne
+    @JoinColumn(name = "address_id")
+    private Address address;
+
     @Column(name = "booking_date", nullable = false)
     private LocalDate date;
 
@@ -36,7 +41,15 @@ public class Booking {
     private String notes;
 
     @Enumerated(EnumType.STRING)
-    private Status status = Status.PENDING;
+    private BookingStatus status = BookingStatus.PENDING;
+
+    @Enumerated(EnumType.STRING)
+    private GroceryOption groceryOption;
+
+    // Costs - populated by Chef upon Acceptance
+    private BigDecimal cookingCharge;
+    private BigDecimal groceryCost; // Only if groceryOption is CHEF_PROVIDED
+    private BigDecimal totalAmount;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -44,9 +57,5 @@ public class Booking {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-    }
-
-    public enum Status {
-        PENDING, CONFIRMED, COMPLETED, CANCELLED
     }
 }

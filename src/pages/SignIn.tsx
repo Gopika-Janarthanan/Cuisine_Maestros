@@ -40,7 +40,7 @@ const SignIn = () => {
     const [regName, setRegName] = useState("");
     const [regEmail, setRegEmail] = useState("");
     const [regPassword, setRegPassword] = useState("");
-    const [role, setRole] = useState<"USER" | "CHEF">("USER");
+    const [role, setRole] = useState<"USER" | "CHEF" | "ADMIN">("USER");
 
     const { login } = useAuth();
 
@@ -51,11 +51,12 @@ const SignIn = () => {
         try {
             const response = await authService.login({ email: loginEmail, password: loginPassword });
             login({
-                id: response.userId.toString(),
+                id: (response.userId || response.id || "").toString(),
                 name: response.name,
                 email: loginEmail,
                 role: response.role,
-                chefId: response.chefId
+                chefId: response.chefId,
+                token: response.token
             });
             toast.success("Welcome back!", { description: "You have successfully signed in." });
             navigate(response.role === "CHEF" ? "/dashboard" : "/");
@@ -73,11 +74,12 @@ const SignIn = () => {
         try {
             const response = await authService.register({ name: regName, email: regEmail, password: regPassword, role });
             login({
-                id: response.userId.toString(),
+                id: (response.userId || response.id || "").toString(),
                 name: response.name,
                 email: regEmail,
                 role: response.role,
-                chefId: response.chefId
+                chefId: response.chefId,
+                token: response.token
             });
             const roleMsg = role === "CHEF" ? "Your chef application has been initialized." : "Ready to hire a chef?";
             toast.success("Account created successfully!", { description: roleMsg });
@@ -144,7 +146,7 @@ const SignIn = () => {
                                     {/* Role Selection */}
                                     <div className="space-y-3 mb-6">
                                         <Label className="text-base font-semibold">I want to...</Label>
-                                        <RadioGroup defaultValue="USER" onValueChange={(v) => setRole(v as "USER" | "CHEF")} className="grid grid-cols-2 gap-4">
+                                        <RadioGroup value={role} onValueChange={(v) => setRole(v as "USER" | "CHEF")} className="grid grid-cols-2 gap-4">
                                             <div>
                                                 <RadioGroupItem value="USER" id="role-user" className="peer sr-only" />
                                                 <Label

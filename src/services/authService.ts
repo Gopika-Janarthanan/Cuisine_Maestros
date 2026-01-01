@@ -1,9 +1,17 @@
 import { apiClient } from './api';
 
 export interface LoginPayload { email: string; password: string }
-export interface RegisterPayload { name: string; email: string; password: string; role?: string }
+export interface RegisterPayload { name: string; email: string; password: string; role?: "USER" | "CHEF" | "ADMIN" }
 
-export interface AuthResponse { id: string; name: string; email: string; role: string; chefId?: number; token?: string }
+export interface AuthResponse {
+  id?: string;
+  userId?: number;
+  name: string;
+  email?: string;
+  role: "USER" | "CHEF" | "ADMIN";
+  chefId?: number;
+  token?: string;
+}
 
 const MOCK_USER_KEY = 'chef_connect_mock_user';
 
@@ -12,10 +20,23 @@ export const authService = {
     try {
       return await apiClient.post<AuthResponse>('/auth/login', payload);
     } catch (err) {
-      // Fallback: simple local mock
-      const mock = { id: 'u1', name: payload.email.split('@')[0], email: payload.email, role: 'USER' } as AuthResponse;
-      localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mock));
-      return mock;
+      // Fallback: Check if user exists in localStorage from previous registration
+      const existingUser = localStorage.getItem(MOCK_USER_KEY);
+      if (existingUser) {
+        try {
+          const parsedUser = JSON.parse(existingUser) as AuthResponse;
+          // Verify email matches
+          if (parsedUser.email === payload.email) {
+            return parsedUser;
+          }
+        } catch (e) {
+          console.error('Failed to parse existing user');
+        }
+      }
+      // If no existing user, we should NOT create a new one automatically with USER role on login
+      // That would overwrite the correct role if the backend is down but the user registered previously
+      // Simulate backend behavior: if not found, fail.
+      throw new Error("Invalid credentials or backend unavailable");
     }
   },
 
@@ -23,7 +44,13 @@ export const authService = {
     try {
       return await apiClient.post<AuthResponse>('/auth/register', payload);
     } catch (err) {
-      const mock = { id: 'u' + Date.now(), name: payload.name, email: payload.email, role: payload.role || 'USER' } as AuthResponse;
+      const mock: AuthResponse = {
+        id: 'u' + Date.now(),
+        name: payload.name,
+        email: payload.email,
+        role: payload.role || 'USER',
+        chefId: payload.role === 'CHEF' ? Date.now() : undefined
+      };
       localStorage.setItem(MOCK_USER_KEY, JSON.stringify(mock));
       return mock;
     }

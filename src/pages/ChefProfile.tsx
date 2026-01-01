@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { chefService } from "@/services/chefService";
@@ -17,18 +18,29 @@ import {
   MessageSquare,
   ArrowLeft,
 } from "lucide-react";
-import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useAuth } from "@/context/AuthContext";
+import { addressService, Address } from "@/services/addressService";
+import ChatWindow from "@/components/ChatWindow";
 
 // Mock chef data
 const chefData = {
@@ -80,6 +92,7 @@ const chefData = {
 
 const ChefProfile = () => {
   const { id } = useParams();
+  const { user } = useAuth();
   const [chefData, setChefData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
@@ -88,6 +101,13 @@ const ChefProfile = () => {
   const [bookingTime, setBookingTime] = useState("");
   const [guestCount, setGuestCount] = useState("");
   const [notes, setNotes] = useState("");
+  const [groceryOption, setGroceryOption] = useState<"USER_PROVIDED" | "CHEF_PROVIDED">("USER_PROVIDED");
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const [addresses, setAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [isAddingAddress, setIsAddingAddress] = useState(false);
+  const [newAddress, setNewAddress] = useState({ street: "", city: "", zipCode: "" });
 
   useEffect(() => {
     const loadChef = async () => {
@@ -95,19 +115,23 @@ const ChefProfile = () => {
       setLoading(true);
       try {
         const data = await chefService.getChefById(id);
-        // Extend mock data with extra profile fields for demo if missing
+        if (!data) {
+          setLoading(false);
+          return;
+        }
         const fullData = {
           ...data,
-          coverImage: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=400&fit=crop",
-          bio: "With over 15 years of culinary experience, I specialize in creating memorable dining experiences.",
-          experience: "15+ years",
-          specialties: ["Pasta Making", "Risotto", "Seafood", "Desserts"],
-          languages: ["English", "Italian", "Spanish"],
-          menuHighlights: ["Handmade Pasta", "Truffle Risotto", "Tiramisu"],
-          reviews: [
-            { id: 1, name: "Sarah M.", rating: 5, date: "Nov 2024", comment: "Amazing food!" },
-            { id: 2, name: "Mike R.", rating: 5, date: "Oct 2024", comment: "Great experience." }
-          ]
+          coverImage: data.coverImage || "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&h=400&fit=crop",
+          image: data.image || "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=800&h=600&fit=crop",
+          specialty: data.specialty || "Chef",
+          bio: data.bio || "Experienced chef...",
+          cuisines: data.cuisines || [],
+          specialties: data.specialties || [],
+          menuHighlights: data.menuHighlights || [],
+          rating: data.rating || 5,
+          reviewCount: data.reviewCount || 0,
+          reviews: data.reviews || [],
+          languages: data.languages || ["English"]
         };
         setChefData(fullData);
       } catch (error) {
@@ -119,24 +143,103 @@ const ChefProfile = () => {
     loadChef();
   }, [id]);
 
+  useEffect(() => {
+    if (isBookingOpen && user && user.id) {
+      setLoading(true);
+      addressService.getUserAddresses(String(user.id))
+        .then(data => {
+          setAddresses(data || []);
+          if (data && data.length > 0) {
+            // Default to first address
+            setSelectedAddressId(String(data[0].id));
+          } else {
+            // No addresses, show add form immediately
+            setIsAddingAddress(true);
+          }
+        })
+        .catch(err => {
+          console.error("Failed to load addresses", err);
+          setIsAddingAddress(true); // Default to add mode if fetch fails
+        })
+        .finally(() => setLoading(false));
+    }
+  }, [isBookingOpen, user]);
+
+  const handleCreateAddress = async () => {
+    if (!user?.id) {
+      toast.error("You must be logged in to add an address");
+      return;
+    }
+
+    if (!newAddress.street || !newAddress.city) {
+      toast.error("Please fill in Street and City");
+      return;
+    }
+
+    try {
+      console.log("Creating new address for user:", user.id);
+      const added = await addressService.addAddress({
+        userId: Number(user.id),
+        street: newAddress.street,
+        city: newAddress.city,
+        state: "India", // Default or could be a field
+        zipCode: newAddress.zipCode || "000000",
+        isDefault: false
+      });
+      console.log("Address created successfully:", added);
+
+      if (added && added.id) {
+        // Update local state properly
+        setAddresses(prev => [...prev, added]);
+
+        // Select the new address
+        setSelectedAddressId(String(added.id));
+
+        setIsAddingAddress(false);
+        setNewAddress({ street: "", city: "", zipCode: "" });
+        toast.success("Address added successfully");
+      } else {
+        throw new Error("Invalid response from server");
+      }
+    } catch (e: any) {
+      console.error("Failed to add address:", e);
+      toast.error("Failed to add address: " + (e.message || "Please check your connection"));
+    }
+  };
+
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!chefData) return;
+    if (!chefData || !user) {
+      toast.error("You must be logged in to book");
+      return;
+    }
+    if (!selectedAddressId) {
+      toast.error("Please select an address");
+      return;
+    }
 
-    await bookingService.createBooking({
-      chefId: chefData.id,
-      date: bookingDate,
-      time: bookingTime,
-      guests: Number(guestCount),
-      notes
-    });
+    try {
+      await bookingService.createBooking({
+        userId: Number(user.id),
+        chefId: Number(chefData.id),
+        addressId: Number(selectedAddressId),
+        date: bookingDate,
+        time: bookingTime,
+        guests: Number(guestCount),
+        notes,
+        groceryOption
+      });
 
-    toast.success("Booking request sent! The chef will confirm shortly.");
-    setIsBookingOpen(false);
-    setBookingDate("");
-    setBookingTime("");
-    setGuestCount("");
-    setNotes("");
+      toast.success("Booking request sent! The chef will confirm shortly.");
+      setIsBookingOpen(false);
+      // Reset form
+      setBookingDate("");
+      setBookingTime("");
+      setGuestCount("");
+      setNotes("");
+    } catch (error) {
+      toast.error("Booking failed");
+    }
   };
 
   if (loading) return <div className="min-h-screen pt-20 text-center">Loading...</div>;
@@ -343,7 +446,18 @@ const ChefProfile = () => {
                   Book Now
                 </Button>
 
-                <Button variant="outline" size="lg" className="w-full mb-6">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="w-full mb-6"
+                  onClick={() => {
+                    if (!user) {
+                      toast.error("Please login to message the chef");
+                      return;
+                    }
+                    setIsChatOpen(true);
+                  }}
+                >
                   <MessageSquare className="w-5 h-5 mr-2" />
                   Send Message
                 </Button>
@@ -379,13 +493,13 @@ const ChefProfile = () => {
 
         {/* Booking Dialog */}
         <Dialog open={isBookingOpen} onOpenChange={setIsBookingOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="font-display text-xl">
                 Book {chefData.name}
               </DialogTitle>
               <DialogDescription>
-                Fill in your details to request a booking
+                Fill in your details to request a booking. You will be charged only after the chef accepts.
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleBooking} className="space-y-4">
@@ -424,6 +538,80 @@ const ChefProfile = () => {
                   required
                 />
               </div>
+
+              {/* Address Selection */}
+              <div className="space-y-2">
+                <Label>Service Address</Label>
+                {!isAddingAddress ? (
+                  <>
+                    <div className="flex gap-2">
+                      <Select value={selectedAddressId} onValueChange={setSelectedAddressId}>
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Select an address" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {addresses.map(addr => (
+                            <SelectItem key={addr.id} value={String(addr.id)}>
+                              {addr.street}, {addr.city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button type="button" variant="outline" onClick={() => setIsAddingAddress(true)}>
+                        New
+                      </Button>
+                    </div>
+                    {/* Show summary of selected address if not adding new */}
+                    {selectedAddressId && !isAddingAddress && (
+                      <div className="mt-2 text-sm text-muted-foreground bg-muted/20 p-2 rounded">
+                        {addresses.find(a => String(a.id) === selectedAddressId)?.street},
+                        {addresses.find(a => String(a.id) === selectedAddressId)?.city}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="border p-4 rounded-md bg-muted/20 space-y-3">
+                    <h4 className="text-sm font-semibold">New Address</h4>
+                    <Input
+                      placeholder="Street Address"
+                      value={newAddress.street}
+                      onChange={e => setNewAddress({ ...newAddress, street: e.target.value })}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <Input
+                        placeholder="City"
+                        value={newAddress.city}
+                        onChange={e => setNewAddress({ ...newAddress, city: e.target.value })}
+                      />
+                      <Input
+                        placeholder="Zip Code"
+                        value={newAddress.zipCode}
+                        onChange={e => setNewAddress({ ...newAddress, zipCode: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex gap-2 justify-end">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setIsAddingAddress(false)}>Cancel</Button>
+                      <Button type="button" size="sm" onClick={handleCreateAddress}>Save Address</Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Grocery Option */}
+              <div className="space-y-2">
+                <Label>Grocery Provision</Label>
+                <RadioGroup value={groceryOption} onValueChange={(v: any) => setGroceryOption(v)} className="flex flex-col space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="USER_PROVIDED" id="user-prov" />
+                    <Label htmlFor="user-prov">I will provide groceries</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="CHEF_PROVIDED" id="chef-prov" />
+                    <Label htmlFor="chef-prov">Chef provides groceries (Extra cost)</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="notes">Special Requests (optional)</Label>
                 <Textarea
@@ -434,20 +622,35 @@ const ChefProfile = () => {
                   rows={3}
                 />
               </div>
-              <div className="flex gap-3 pt-4">
+              <DialogFooter>
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1"
                   onClick={() => setIsBookingOpen(false)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" variant="gold" className="flex-1">
+                <Button type="submit" variant="gold">
                   Send Request
                 </Button>
-              </div>
+              </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Chat Dialog */}
+        <Dialog open={isChatOpen} onOpenChange={setIsChatOpen}>
+          <DialogContent className="sm:max-w-md p-0 overflow-hidden">
+            <DialogHeader className="p-4 border-b">
+              <DialogTitle>Chat with {chefData.name}</DialogTitle>
+            </DialogHeader>
+            <div className="p-0">
+              <ChatWindow
+                otherUserId={Number(chefData.user?.id)}
+                otherUserName={chefData.name}
+                className="border-0 rounded-none shadow-none h-[450px]"
+              />
+            </div>
           </DialogContent>
         </Dialog>
       </main>

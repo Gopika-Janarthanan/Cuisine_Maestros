@@ -12,6 +12,15 @@ export interface Chef {
     location: string;
     available: boolean;
     gender: "Male" | "Female";
+    // Detailed profile fields (optional as they differ between summary and detail views)
+    coverImage?: string;
+    bio?: string;
+    specialties?: string[];
+    menuHighlights?: string[];
+    reviews?: any[];
+    languages?: string[];
+    experience?: string;
+    user?: { id: number; name: string; email: string; imageUrl?: string };
 }
 
 // Mock data (fallback)
@@ -170,7 +179,8 @@ const MOCK_CHEFS: Chef[] = [
         pricePerHour: 1600,
         location: "Tangra, Kolkata",
         available: true,
-        gender: "Male"
+        gender: "Male",
+        user: { id: 112, name: "Chef Liang Zhang", email: "liang@example.com" }
     }
 ];
 
@@ -217,6 +227,20 @@ export const chefService = {
                 // Note: Price range and sorting could be added here for a better mock experience
                 return matchesQuery && matchesCuisine && matchesGender && matchesLocation;
             });
+        }
+    },
+    updateChef: async (id: string, updates: Partial<Chef>) => {
+        try {
+            return await apiClient.put<Chef>(`/chefs/${id}`, updates);
+        } catch (error) {
+            console.log("Backend offline, cannot update mock data persistently");
+            // Mock update for session
+            const chefIndex = MOCK_CHEFS.findIndex(c => c.id === id);
+            if (chefIndex >= 0) {
+                MOCK_CHEFS[chefIndex] = { ...MOCK_CHEFS[chefIndex], ...updates };
+                return MOCK_CHEFS[chefIndex];
+            }
+            throw error;
         }
     }
 };

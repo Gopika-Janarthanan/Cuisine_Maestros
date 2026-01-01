@@ -5,14 +5,15 @@ interface User {
     id: string;
     name: string;
     email: string;
-    role: "USER" | "CHEF";
+    role: "USER" | "CHEF" | "ADMIN";
     chefId?: number;
 }
 
 interface AuthContextType {
     user: User | null;
-    login: (user: User) => void;
+    login: (user: User & { token?: string }) => void;
     logout: () => void;
+    updateProfile: (data: { name: string; imageUrl?: string }) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,7 +22,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        // Check localStorage on mount
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
             try {
@@ -32,22 +32,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     }, []);
 
-    const login = (userData: User) => {
-        setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData));
+    const login = (userData: User & { token?: string }) => {
+        const { token, ...userFields } = userData;
+        setUser(userFields);
+        localStorage.setItem("user", JSON.stringify(userFields));
+        if (token) {
+            localStorage.setItem("token", token);
+        }
     };
 
     const logout = () => {
         setUser(null);
         localStorage.removeItem("user");
+        localStorage.removeItem("token");
+    };
+
+    const updateProfile = (data: { name: string; imageUrl?: string }) => {
+        if (!user) return;
+        const newUser = { ...user, ...data };
+        setUser(newUser);
+        localStorage.setItem("user", JSON.stringify(newUser));
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout }}>
+        <AuthContext.Provider value={{ user, login, logout, updateProfile }}>
             {children}
         </AuthContext.Provider>
     );
 };
+
 
 export const useAuth = () => {
     const context = useContext(AuthContext);

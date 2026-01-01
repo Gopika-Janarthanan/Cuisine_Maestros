@@ -46,11 +46,22 @@ public class Chef {
 
     private String gender;
 
+    private String experience;
+
+    @ElementCollection
+    @CollectionTable(name = "chef_specialties", joinColumns = @JoinColumn(name = "chef_id"))
+    @Column(name = "specialty")
+    private List<String> specialties;
+
     public String getName() {
         return user != null ? user.getName() : null;
     }
 
     public String getEmail() {
         return user != null ? user.getEmail() : null;
+    }
+
+    public String getImage() {
+        return imageUrl;
     }
 }

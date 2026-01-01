@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ChefHat, Menu, X, UserCircle, LogOut } from "lucide-react";
+import { ChefHat, Menu, X, UserCircle, LogOut, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
@@ -85,6 +85,13 @@ const Navbar = () => {
                 <DropdownMenuItem onClick={() => navigate("/profile")}>
                   My Profile
                 </DropdownMenuItem>
+                {/* Chat Links based on rol (Simplified: direct people to their respective dashboard pages where chat resides) */}
+                {user.role === 'CHEF' && (
+                  <DropdownMenuItem onClick={() => navigate("/dashboard")}>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Messages
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-red-500 focus:text-red-500">
                   <LogOut className="mr-2 h-4 w-4" />

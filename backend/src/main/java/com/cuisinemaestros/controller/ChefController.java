@@ -10,10 +10,16 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/chefs")
+@SuppressWarnings("null")
 public class ChefController {
 
     @Autowired
     private ChefRepository chefRepository;
+
+    @GetMapping
+    public List<Chef> getAllChefs() {
+        return chefRepository.findAll();
+    }
 
     @GetMapping("/featured")
     public List<Chef> getFeaturedChefs() {
@@ -83,5 +89,34 @@ public class ChefController {
 
         List<Chef> filtered = stream.toList();
         return ResponseEntity.ok(filtered);
+    }
+
+    @PutMapping("/{id}")
+    @SuppressWarnings("null")
+    public ResponseEntity<Chef> updateChef(@PathVariable Long id,
+            @RequestBody com.cuisinemaestros.dto.ChefUpdateDTO request) {
+        return chefRepository.findById(id)
+                .map(chef -> {
+                    if (request.getPricePerHour() != null)
+                        chef.setPricePerHour(request.getPricePerHour());
+                    if (request.getSpecialty() != null)
+                        chef.setSpecialty(request.getSpecialty());
+                    if (request.getBio() != null)
+                        chef.setBio(request.getBio());
+                    if (request.getLocation() != null)
+                        chef.setLocation(request.getLocation());
+                    if (request.getExperience() != null)
+                        chef.setExperience(request.getExperience());
+                    if (request.getCuisines() != null)
+                        chef.setCuisines(request.getCuisines());
+                    if (request.getSpecialties() != null)
+                        chef.setSpecialties(request.getSpecialties());
+                    if (request.getAvailable() != null)
+                        chef.setAvailable(request.getAvailable());
+                    if (request.getImage() != null)
+                        chef.setImageUrl(request.getImage());
+                    return ResponseEntity.ok(chefRepository.save(chef));
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 }

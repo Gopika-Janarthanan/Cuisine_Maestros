@@ -15,6 +15,9 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private com.cuisinemaestros.repository.UserRepository userRepository;
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
@@ -23,5 +26,21 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
         return ResponseEntity.ok(authService.register(request));
+    }
+
+    @GetMapping("/me")
+    @SuppressWarnings("null")
+    public ResponseEntity<com.cuisinemaestros.entity.User> getMe(@RequestHeader("Authorization") String token) {
+        if (token != null && token.startsWith("Bearer dummy-jwt-token-")) {
+            try {
+                Long userId = Long.parseLong(token.substring("Bearer dummy-jwt-token-".length()));
+                return userRepository.findById(userId)
+                        .map(ResponseEntity::ok)
+                        .orElse(ResponseEntity.status(401).build());
+            } catch (Exception e) {
+                return ResponseEntity.status(401).build();
+            }
+        }
+        return ResponseEntity.status(401).build();
     }
 }
