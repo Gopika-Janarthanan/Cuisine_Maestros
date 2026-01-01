@@ -14,7 +14,7 @@
             "request": "launch",
             "name": "Frontend: Chrome",
             "url": "http://localhost:5173",
-            "webRoot": "${workspaceFolder}/src",
+            "webRoot": "${workspaceFolder}/frontend/src",
             "sourceMapPathOverrides": {
                 "webpack:///src/*": "${webRoot}/*"
             }

@@ -22,7 +22,7 @@
             "type": "shell",
             "command": "npm run dev",
             "options": {
-                "cwd": "${workspaceFolder}"
+                "cwd": "${workspaceFolder}/frontend"
             },
             "isBackground": true,
             "problemMatcher": {

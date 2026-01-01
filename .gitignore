@@ -52,3 +52,7 @@ tmp/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# Build artifacts and temp files
+*.mjs
+*.zip
